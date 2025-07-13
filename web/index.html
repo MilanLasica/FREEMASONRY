@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freemasonry Twitter Scraper</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-compass"></i>
+                <h1>Freemasonry Scraper</h1>
+            </div>
+            <div class="status">
+                <span class="status-indicator" id="status"></span>
+                <span id="account-count">0 accounts connected</span>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="dashboard">
+                <i class="fas fa-home"></i> Dashboard
+            </button>
+            <button class="tab-btn" data-tab="search">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <button class="tab-btn" data-tab="accounts">
+                <i class="fas fa-users"></i> Accounts
+            </button>
+            <button class="tab-btn" data-tab="results">
+                <i class="fas fa-chart-bar"></i> Results
+            </button>
+            <button class="tab-btn" data-tab="ai-config">
+                <i class="fas fa-robot"></i> AI Config
+            </button>
+        </nav>
+
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="cards-grid">
+                <div class="card stats-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> Statistics</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-number" id="total-tweets">0</span>
+                            <span class="stat-label">Tweets Scraped</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="total-users">0</span>
+                            <span class="stat-label">Users Analyzed</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="active-accounts">0</span>
+                            <span class="stat-label">Active Accounts</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="last-search">Never</span>
+                            <span class="stat-label">Last Search</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card quick-actions">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    </div>
+                    <div class="actions-grid">
+                        <button class="action-btn" onclick="switchTab('search')">
+                            <i class="fas fa-search"></i>
+                            <span>New Search</span>
+                        </button>
+                        <button class="action-btn" onclick="switchTab('accounts')">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Add Account</span>
+                        </button>
+                        <button class="action-btn" onclick="exportResults()">
+                            <i class="fas fa-download"></i>
+                            <span>Export Data</span>
+                        </button>
+                        <button class="action-btn" onclick="clearData()">
+                            <i class="fas fa-trash"></i>
+                            <span>Clear Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card recent-activity">
+                    <div class="card-header">
+                        <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+                    </div>
+                    <div class="activity-list" id="activity-list">
+                        <div class="activity-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Welcome! Add your Twitter accounts to get started.</span>
+                            <span class="time">Now</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Tab -->
+        <div class="tab-content" id="search">
+            <div class="search-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-search"></i> Search Twitter</h3>
+                    </div>
+                    <form class="search-form" id="search-form">
+                        <div class="form-group">
+                            <label for="search-query">Search Query</label>
+                            <input type="text" id="search-query" placeholder="Enter search terms (e.g., 'python programming')" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="search-limit">Limit</label>
+                                <input type="number" id="search-limit" value="10" min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="search-type">Search Type</label>
+                                <select id="search-type">
+                                    <option value="Latest">Latest</option>
+                                    <option value="Top">Top</option>
+                                    <option value="Media">Media</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-search"></i> Search Tweets
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-user"></i> User Lookup</h3>
+                    </div>
+                    <form class="user-form" id="user-form">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" placeholder="Enter username (without @)" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <button type="button" class="btn-secondary" onclick="getUserInfo()">
+                                <i class="fas fa-user"></i> Get User Info
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="getUserTweets()">
+                                <i class="fas fa-comment"></i> Get User Tweets
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounts Tab -->
+        <div class="tab-content" id="accounts">
+            <div class="accounts-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-user-plus"></i> Add Twitter Account</h3>
+                    </div>
+                    <form class="account-form" id="account-form">
+                        <div class="form-group">
+                            <label for="account-username">Username</label>
+                            <input type="text" id="account-username" placeholder="Twitter username" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-password">Password</label>
+                            <input type="password" id="account-password" placeholder="Twitter password" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-email">Email</label>
+                            <input type="email" id="account-email" placeholder="Email address" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-email-password">Email Password</label>
+                            <input type="password" id="account-email-password" placeholder="Email password for verification">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-cookies">Cookies (Optional)</label>
+                            <textarea id="account-cookies" placeholder="Cookie string or JSON (more stable than password login)" rows="3"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i> Add Account
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-users"></i> Connected Accounts</h3>
+                        <button class="btn-secondary" onclick="refreshAccounts()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="accounts-list" id="accounts-list">
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No accounts connected yet.</p>
+                            <p>Add your Twitter accounts above to get started.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div class="tab-content" id="results">
+            <div class="results-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Search Results</h3>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="exportResults()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn-secondary" onclick="clearResults()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-list" id="results-list">
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>No search results yet.</p>
+                            <p>Use the Search tab to start scraping tweets.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Configuration Tab -->
+        <div class="tab-content" id="ai-config">
+            <div class="config-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-robot"></i> AI Reply Configuration</h3>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="loadBusinessConfig()">
+                                <i class="fas fa-sync"></i> Reload
+                            </button>
+                            <button class="btn-primary" onclick="saveBusinessConfig()">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                    <form class="config-form" id="ai-config-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="company-name">Company Name</label>
+                                <input type="text" id="company-name" placeholder="Your Business Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="industry">Industry</label>
+                                <input type="text" id="industry" placeholder="Your Industry" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tone">Reply Tone</label>
+                                <select id="tone">
+                                    <option value="professional">Professional</option>
+                                    <option value="friendly">Friendly</option>
+                                    <option value="casual">Casual</option>
+                                    <option value="authoritative">Authoritative</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="target-audience">Target Audience</label>
+                                <input type="text" id="target-audience" placeholder="professionals and businesses">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="personality">Brand Personality</label>
+                            <input type="text" id="personality" placeholder="helpful and knowledgeable">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="key-services">Key Services (comma-separated)</label>
+                            <textarea id="key-services" rows="2" placeholder="Service 1, Service 2, Service 3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="brand-values">Brand Values (comma-separated)</label>
+                            <textarea id="brand-values" rows="2" placeholder="Quality, Innovation, Customer satisfaction"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reply-guidelines">Reply Guidelines (one per line)</label>
+                            <textarea id="reply-guidelines" rows="4" placeholder="Be helpful and informative
+Keep responses concise and relevant
+Always add value to the conversation"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="avoid-topics">Topics to Avoid (comma-separated)</label>
+                            <textarea id="avoid-topics" rows="2" placeholder="Political discussions, Controversial subjects"></textarea>
+                        </div>
+                    </form>
+                    
+                    <div class="config-status" id="config-status">
+                        <p><strong>Claude.ai Status:</strong> <span id="claude-status">Checking...</span></p>
+                        <p><i class="fas fa-info-circle"></i> Make sure to set your ANTHROPIC_API_KEY environment variable</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Processing...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
